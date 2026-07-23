@@ -1,0 +1,4 @@
+cd "c:\Users\Chubuk\Desktop\задания\Project\продажа брейнротов"
+git init
+git add .
+git commit -m "Initial project commit for Telegram shop"

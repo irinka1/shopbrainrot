@@ -1,0 +1,13 @@
+{
+  "name": "brainrot-shop",
+  "version": "1.0.0",
+  "description": "Mini Telegram shop for Grow a Garden 2",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "bot": "node bot.js"
+  },
+  "dependencies": {
+    "express": "^4.19.0"
+  }
+}

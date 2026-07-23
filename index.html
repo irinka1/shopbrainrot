@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grow a Garden 2 — магазин</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Миниапп для Telegram</p>
+          <h1>Grow a Garden 2 — продажа брейнротов</h1>
+          <p class="subtitle">Выбирайте товар, добавляйте в корзину и отправляйте заказ администратору.</p>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="products" id="products"></section>
+
+        <aside class="cart">
+          <h2>Корзина</h2>
+          <div id="cart-items" class="cart-items"></div>
+
+          <form id="order-form" class="order-form">
+            <input type="text" name="name" placeholder="Ваше имя" required />
+            <input type="tel" name="phone" placeholder="Телефон" required />
+            <input type="text" name="telegram" placeholder="Telegram @username" />
+            <textarea name="comment" placeholder="Комментарий к заказу"></textarea>
+            <button type="submit">Отправить заказ</button>
+          </form>
+
+          <p id="status" class="status"></p>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
