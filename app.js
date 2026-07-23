@@ -112,9 +112,9 @@ orderForm.addEventListener('submit', async (event) => {
     }
   }
 
-  // Обычный веб-поток — отправляем на сервер
+  // Сначала пробуем отправить на Netlify Function (если сайт задеплоен на Netlify)
   try {
-    const response = await fetch('/api/order', {
+    const response = await fetch('/.netlify/functions/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: cart, customer })
@@ -122,8 +122,29 @@ orderForm.addEventListener('submit', async (event) => {
 
     const result = await response.json();
 
-    if (!response.ok || !result.ok) {
-      throw new Error(result.error || 'Не вдалося відправити замовлення');
+    if (response.ok && result.ok) {
+      statusBox.textContent = 'Замовлення надіслано адміністратору (Netlify Function).';
+      orderForm.reset();
+      cart.length = 0;
+      renderCart();
+      return;
+    }
+  } catch (err) {
+    console.warn('Netlify function not available or failed, falling back to local API.', err);
+  }
+
+  // Фоллбек — локальный сервер /api/order
+  try {
+    const response2 = await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart, customer })
+    });
+
+    const result2 = await response2.json();
+
+    if (!response2.ok || !result2.ok) {
+      throw new Error(result2.error || 'Не вдалося відправити замовлення');
     }
 
     statusBox.textContent = 'Замовлення надіслано адміністратору.';
