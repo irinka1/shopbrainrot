@@ -10,6 +10,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check required secrets
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] || [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "Missing required repository secrets: CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID";
+            echo "Add them in GitHub → Settings → Secrets and variables → Actions";
+            exit 1;
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
