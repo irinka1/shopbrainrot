@@ -112,6 +112,17 @@ orderForm.addEventListener('submit', async (event) => {
     }
   }
 
+  // Помощник для безопасного JSON-парсинга ответа
+  async function parseJsonSafe(response) {
+    const text = await response.text();
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      return { error: `Unexpected response from server: ${text}` };
+    }
+  }
+
   // Сначала пробуем отправить на Netlify Function (если сайт задеплоен на Netlify)
   try {
     const response = await fetch('/.netlify/functions/order', {
@@ -120,15 +131,17 @@ orderForm.addEventListener('submit', async (event) => {
       body: JSON.stringify({ items: cart, customer })
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.ok) {
+    const result = await parseJsonSafe(response);
+    if (response.ok && result && result.ok) {
       statusBox.textContent = 'Замовлення надіслано адміністратору (Netlify Function).';
       orderForm.reset();
       cart.length = 0;
       renderCart();
       return;
     }
+
+    const errorMessage = result?.error || result?.message || `Функция вернула статус ${response.status}`;
+    throw new Error(errorMessage);
   } catch (err) {
     console.warn('Netlify function not available or failed, falling back to local API.', err);
   }
@@ -141,10 +154,11 @@ orderForm.addEventListener('submit', async (event) => {
       body: JSON.stringify({ items: cart, customer })
     });
 
-    const result2 = await response2.json();
+    const result2 = await parseJsonSafe(response2);
 
-    if (!response2.ok || !result2.ok) {
-      throw new Error(result2.error || 'Не вдалося відправити замовлення');
+    if (!response2.ok || !result2?.ok) {
+      const errorMessage = result2?.error || 'Не вдалося відправити замовлення';
+      throw new Error(errorMessage);
     }
 
     statusBox.textContent = 'Замовлення надіслано адміністратору.';
