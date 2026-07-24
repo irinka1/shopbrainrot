@@ -1,0 +1,6 @@
+[build]
+  command = ""
+
+name = "shopbrainrot-worker"
+compatibility_date = "2026-07-24"
+type = "javascript"

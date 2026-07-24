@@ -11,6 +11,9 @@ const products = [
 
 const cart = [];
 
+// Set this to your Cloudflare Worker URL after deploy, e.g. https://shopbrainrot-worker.yourdomain.workers.dev
+const ORDER_URL = 'https://<your-worker>.workers.dev';
+
 const productsContainer = document.getElementById('products');
 const cartItemsContainer = document.getElementById('cart-items');
 const orderForm = document.getElementById('order-form');
@@ -123,30 +126,32 @@ orderForm.addEventListener('submit', async (event) => {
     }
   }
 
-  // Сначала пробуем отправить на Netlify Function (если сайт задеплоен на Netlify)
+  const isNetlify = window.location.hostname.includes('netlify.app');
+
+  // Сначала пробуем отправить на Cloudflare Worker (если задеплоен)
   try {
-    const response = await fetch('/.netlify/functions/order', {
+    const resp = await fetch(ORDER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: cart, customer })
     });
 
-    const result = await parseJsonSafe(response);
-    if (response.ok && result && result.ok) {
-      statusBox.textContent = 'Замовлення надіслано адміністратору (Netlify Function).';
+    const result = await parseJsonSafe(resp);
+    if (resp.ok && result && result.ok) {
+      statusBox.textContent = 'Замовлення надіслано адміністратору (Worker).';
       orderForm.reset();
       cart.length = 0;
       renderCart();
       return;
     }
 
-    const errorMessage = result?.error || result?.message || `Функция вернула статус ${response.status}`;
-    throw new Error(errorMessage);
+    // если worker вернул ошибку, пробуем дальше
+    console.warn('Worker response not ok:', resp.status, result);
   } catch (err) {
-    console.warn('Netlify function not available or failed, falling back to local API.', err);
+    console.warn('Cloudflare Worker request failed:', err);
   }
 
-  // Фоллбек — локальный сервер /api/order
+  // Фоллбек — локальный сервер /api/order (только при локальной разработке)
   try {
     const response2 = await fetch('/api/order', {
       method: 'POST',
@@ -157,7 +162,7 @@ orderForm.addEventListener('submit', async (event) => {
     const result2 = await parseJsonSafe(response2);
 
     if (!response2.ok || !result2?.ok) {
-      const errorMessage = result2?.error || 'Не вдалося відправити замовлення';
+      const errorMessage = result2?.error || `Не вдалося відправити замовлення (${response2.status})`;
       throw new Error(errorMessage);
     }
 
