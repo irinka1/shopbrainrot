@@ -11,10 +11,6 @@ const products = [
 
 const cart = [];
 
-// Set this to your Cloudflare Worker URL after deploy, e.g. https://shopbrainrot-worker.yourdomain.workers.dev
-const ORDER_URL = 'https://<your-worker>.workers.dev';
-const USE_WORKER = !ORDER_URL.includes('<your-worker>');
-
 const productsContainer = document.getElementById('products');
 const cartItemsContainer = document.getElementById('cart-items');
 const orderForm = document.getElementById('order-form');
@@ -98,28 +94,7 @@ orderForm.addEventListener('submit', async (event) => {
   };
 
   statusBox.textContent = 'Відправляю замовлення...';
-
-  console.log('Telegram object', window.Telegram);
-  console.log('Telegram.WebApp', window.Telegram?.WebApp);
-
-  // Если страница открыта внутри Telegram Web App — отправляем данные боту
-  if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function') {
-    try {
-      const payload = { items: cart, customer };
-      window.Telegram.WebApp.sendData(JSON.stringify(payload));
-      statusBox.textContent = '✅ Замовлення відправлено через Telegram Web App.';
-      orderForm.reset();
-      cart.length = 0;
-      renderCart();
-      return;
-    } catch (err) {
-      console.error('Ошибка отправки через WebApp:', err);
-      statusBox.textContent = 'Не вдалося відправити через Telegram Web App.';
-      return;
-    }
-  }
-
-  console.log('Proceeding with local order POST to /api/order');
+  console.log('Submitting order locally to /api/order');
 
   // Помощник для безопасного JSON-парсинга ответа
   async function parseJsonSafe(response) {
@@ -132,32 +107,6 @@ orderForm.addEventListener('submit', async (event) => {
     }
   }
 
-  const isNetlify = window.location.hostname.includes('netlify.app');
-
-  if (USE_WORKER) {
-    try {
-      const resp = await fetch(ORDER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart, customer })
-      });
-
-      const result = await parseJsonSafe(resp);
-      if (resp.ok && result && result.ok) {
-        statusBox.textContent = 'Замовлення надіслано адміністратору (Worker).';
-        orderForm.reset();
-        cart.length = 0;
-        renderCart();
-        return;
-      }
-
-      console.warn('Worker response not ok:', resp.status, result);
-    } catch (err) {
-      console.warn('Cloudflare Worker request failed:', err);
-    }
-  }
-
-  // По умолчанию отправляем локально через сервер Express
   try {
     const response2 = await fetch('/api/order', {
       method: 'POST',
