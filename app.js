@@ -13,6 +13,7 @@ const cart = [];
 
 // Set this to your Cloudflare Worker URL after deploy, e.g. https://shopbrainrot-worker.yourdomain.workers.dev
 const ORDER_URL = 'https://<your-worker>.workers.dev';
+const USE_WORKER = !ORDER_URL.includes('<your-worker>');
 
 const productsContainer = document.getElementById('products');
 const cartItemsContainer = document.getElementById('cart-items');
@@ -128,30 +129,30 @@ orderForm.addEventListener('submit', async (event) => {
 
   const isNetlify = window.location.hostname.includes('netlify.app');
 
-  // Сначала пробуем отправить на Cloudflare Worker (если задеплоен)
-  try {
-    const resp = await fetch(ORDER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: cart, customer })
-    });
+  if (USE_WORKER) {
+    try {
+      const resp = await fetch(ORDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cart, customer })
+      });
 
-    const result = await parseJsonSafe(resp);
-    if (resp.ok && result && result.ok) {
-      statusBox.textContent = 'Замовлення надіслано адміністратору (Worker).';
-      orderForm.reset();
-      cart.length = 0;
-      renderCart();
-      return;
+      const result = await parseJsonSafe(resp);
+      if (resp.ok && result && result.ok) {
+        statusBox.textContent = 'Замовлення надіслано адміністратору (Worker).';
+        orderForm.reset();
+        cart.length = 0;
+        renderCart();
+        return;
+      }
+
+      console.warn('Worker response not ok:', resp.status, result);
+    } catch (err) {
+      console.warn('Cloudflare Worker request failed:', err);
     }
-
-    // если worker вернул ошибку, пробуем дальше
-    console.warn('Worker response not ok:', resp.status, result);
-  } catch (err) {
-    console.warn('Cloudflare Worker request failed:', err);
   }
 
-  // Фоллбек — локальный сервер /api/order (только при локальной разработке)
+  // По умолчанию отправляем локально через сервер Express
   try {
     const response2 = await fetch('/api/order', {
       method: 'POST',
@@ -173,6 +174,7 @@ orderForm.addEventListener('submit', async (event) => {
   } catch (error) {
     statusBox.textContent = error.message;
   }
+
 });
 
 renderProducts();

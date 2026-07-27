@@ -27,7 +27,7 @@ function loadEnv() {
 const env = loadEnv();
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || env.ADMIN_CHAT_ID;
-const SHOP_URL = process.env.SHOP_URL || env.SHOP_URL || 'https://shopbrainrot1.netlify.app';
+const SHOP_URL = process.env.SHOP_URL || env.SHOP_URL || 'http://localhost:3000';
 
 if (!BOT_TOKEN) {
   console.error('Ошибка: не задан TELEGRAM_BOT_TOKEN. Поместите его в keys.env/.env.');
