@@ -27,8 +27,7 @@ function loadEnv() {
 const env = loadEnv();
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || env.ADMIN_CHAT_ID;
-// Fully local desktop mode: always point Telegram Web App to the local server on this laptop.
-const SHOP_URL = 'http://localhost:3000';
+const SHOP_URL = process.env.SHOP_URL || env.SHOP_URL || 'http://localhost:3000';
 
 if (!BOT_TOKEN) {
   console.error('Ошибка: не задан TELEGRAM_BOT_TOKEN. Поместите его в keys.env/.env.');
@@ -106,6 +105,9 @@ bot.catch((err, ctx) => {
 bot.launch().then(() => {
   console.log('✅ Telegram-бот запущен.');
   console.log('🔗 Магазин открыт по адресу:', SHOP_URL);
+  if (SHOP_URL.includes('localhost')) {
+    console.log('⚠️ Для работы с телефоном в одной сети замените SHOP_URL на IP ноутбука в keys.env/.env.');
+  }
 }).catch((error) => {
   console.error('Не удалось запустить бота:', error);
   process.exit(1);

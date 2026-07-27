@@ -1,9 +1,22 @@
 const express = require('express');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+function getLocalIp() {
+  const ifaces = os.networkInterfaces();
+  for (const name of Object.keys(ifaces)) {
+    for (const iface of ifaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return null;
+}
 
 app.use(express.static(__dirname));
 app.use(express.json());
@@ -96,6 +109,12 @@ app.post('/api/order', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
+  const localIp = getLocalIp();
   console.log(`Сервер запущен на http://localhost:${port}`);
+  if (localIp) {
+    console.log(`Доступно в LAN по адресу: http://${localIp}:${port}`);
+  } else {
+    console.log('Не удалось определить локальный IP. Используйте localhost или задайте SHOP_URL вручную.');
+  }
 });
