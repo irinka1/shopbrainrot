@@ -99,6 +99,9 @@ orderForm.addEventListener('submit', async (event) => {
 
   statusBox.textContent = 'Відправляю замовлення...';
 
+  console.log('Telegram object', window.Telegram);
+  console.log('Telegram.WebApp', window.Telegram?.WebApp);
+
   // Если страница открыта внутри Telegram Web App — отправляем данные боту
   if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function') {
     try {
@@ -115,6 +118,8 @@ orderForm.addEventListener('submit', async (event) => {
       return;
     }
   }
+
+  console.log('Proceeding with local order POST to /api/order');
 
   // Помощник для безопасного JSON-парсинга ответа
   async function parseJsonSafe(response) {
