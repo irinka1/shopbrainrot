@@ -164,6 +164,7 @@ orderForm.addEventListener('submit', async (event) => {
 
     if (!response2.ok || !result2?.ok) {
       const errorMessage = result2?.error || `Не вдалося відправити замовлення (${response2.status})`;
+      console.error('Order submit error', response2.status, result2);
       throw new Error(errorMessage);
     }
 
@@ -172,7 +173,8 @@ orderForm.addEventListener('submit', async (event) => {
     cart.length = 0;
     renderCart();
   } catch (error) {
-    statusBox.textContent = error.message;
+    console.error('Order submit catch', error);
+    statusBox.textContent = error.message || 'Не вдалося відправити замовлення.';
   }
 
 });
